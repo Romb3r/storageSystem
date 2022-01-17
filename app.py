@@ -23,6 +23,8 @@ def insert_food(id: int, typ: str, amount: int, place: str):
 @app.put("/update/food/{id}/{typ}/{operation}")
 def update_food_amount(id: int, typ: str, operation: bool):
     amount = db.update_food_amount(id, typ, operation)
+    if amount == 0:
+        return {"id": id, "Typ": typ, "Status": "deleted"}
     return {"id": id, "Typ": typ, "Neue Menge": amount}
 
 @app.delete("/delete/food/{id}/{typ}")

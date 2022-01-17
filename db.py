@@ -18,6 +18,9 @@ def insert_food(id, typ, amount, place):
 def update_food_amount(id, typ, operation):
     c.execute("SELECT amount FROM food WHERE Fid = :Fid AND Ftype = :Ftype", {'Fid': id, 'Ftype': typ})
     amount = c.fetchone()
+    if amount[0] == 0:
+        delete_food(id, typ)
+        return amount[0]
     with conn:
         if operation:
             c.execute("""UPDATE food SET amount = :amount
