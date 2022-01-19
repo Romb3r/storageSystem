@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Lebensmittel-Bestand</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1>Lebensmittel-Bestand</h1>
+    </div>
+    <div>
+        <table id="foodInputTable" class="table table-hover">
+            <tr>
+                <td><input id="col0" type="text" name="id" value=""/></td>
+                <td><input id="col1" type="text" name="typ" value=""/></td>
+                <td><input id="col2" type="text" name="place" value=""/></td>
+                <td>
+                    <select id="col3" name="amount[]" id="InputAmount">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </td>
+                <td id="col4"><button id="inBtn" class="btn" onclick="addRow()"><i class="fa fa-check"></i></button></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <table class="table table-hover">
+            <tr id="firstRow">
+                <th>ID</th>
+                <th>Typ</th>
+                <th>Ort</th>
+                <th>Menge</th>
+            </tr>
+            <tbody id="foodTable"></tbody>
+        </table>
+    </div>
+</body>
+<script>
+var rows = "";
+    function addRow() {
+        var id = document.getElementById('col0').value
+        var typ = document.getElementById('col1').value;
+        var place = document.getElementById('col2').value;
+        var amount = document.getElementById('col3').value;
+        rows += "<tbody><tr><td>" + id + "</td><td>" + typ + "</td><td>" + place + "</td><td>" + amount + "</td><td id='col4'><button id='delBtn' class='btn' onclick='delRow()'><i class='fa fa-trash'></i></button></td></tr></tbody>";
+        document.getElementById('foodTable').innerHTML = rows;
+
+        fetch("http://localhost:8000/insert/food/" + id + "/" + typ + "/" + amount + "/" + place, {
+            method: "POST"
+        })
+
+    }
+</script>
+<script>
+    function delRow() {
+
+    }
+</script>
+</html>
