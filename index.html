@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Lebensmittel-Bestand</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div>
+        <h1>Lebensmittel-Bestand</h1>
+    </div>
+    <div>
+        <table id="foodInputTable" class="table table-striped">
+            <tr>
+                <td><input id="col0" type="text" name="id" value="" placeholder="ID"/></td>
+                <td><input id="col1" type="text" name="typ" value="" placeholder="Bezeichnung"/></td>
+                <td>
+                    <select id="col2" name="place[]" id="InputPlace">
+                        <option value="0">Ort</option>
+                        <option value="1">K&uuml;hlschrank</option>
+                        <option value="2">Froster</option>
+                        <option value="3">Schrank</option>
+                        <option value="4">Tisch</option>
+                        <option value="5">Regal</option>
+                    </select>
+                </td>
+                <td>
+                    <select id="col3" name="amount[]" id="InputAmount">
+                        <option value="0">Menge</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                    </select>
+                </td>
+                <td id="col4"><button id="inBtn" class="btnAdd" onclick=addRow()><i class="bi bi-check-lg"></i></button></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <table class="table table-striped" id="contentTable">
+            <tr id="firstRow">
+                <th>ID</th>
+                <th>Bezeichnung</th>
+                <th>Ort</th>
+                <th>Menge</th>
+                <th>L&ouml;schen</th>
+            </tr>
+            <tbody id="foodTable"></tbody>
+        </table>
+    </div>
+</body>
+<script>
+var rows = "";
+    function addRow() {
+        var i = 0;
+        var Itemid = document.getElementById('col0').value;
+        var typ = document.getElementById('col1').value;
+        var place = document.getElementById('col2').value;
+        var amount = document.getElementById('col3').value;
+        document.getElementById('col0').value = "";
+        document.getElementById('col1').value = "";
+        document.getElementById('col2').value = 0;
+        document.getElementById('col3').value = 0;
+        if (Itemid == "" || typ == "" || place == 0 || amount == 0) {
+            alert("Alle Attribute angeben!")
+            return
+        }
+        if (place == 1) {
+            place = "K\&uuml;hlschrank"
+        } else if (place == 2) {
+            place = "Froster"
+        } else if (place == 3) {
+            place = "Schrank"
+        } else if (place == 4) {
+            place = "Tisch"
+        } else if (place == 5) {
+            place = "Regal"
+        }
+        rows += `<tr><td>${Itemid}</td><td>${typ}</td><td>${place}</td><td id='colAmount'><button id="${i}" class='btnAddDel' onclick='patchAmount(true, i)'><i class='bi bi-plus-circle'></i></button>${amount}<button id="${i}" class='btnAddDel' onclick='patchAmount(false, i)'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id=${i} class='btn' onclick='delRow(this, "${Itemid}", "${typ}", "${place}", "${amount}", "${i}")'><i class='fa fa-trash'></i></button></td></tr>`;
+        console.log(rows)
+        i = i + 1;
+        document.getElementById('foodTable').innerHTML = rows;
+
+        fetch("http://localhost:8000/insert/food/" + Itemid + "/" + typ + "/" + amount + "/" + place, {
+            method: "POST"
+        })
+
+    }
+
+    function delRow(btn, Itemid, typ, place, amount, i) {
+        let delStr = `<tr><td>${Itemid}</td><td>${typ}</td><td>${place}</td><td id='colAmount'><button id="${i}" class='btnAddDel' onclick='patchAmount(true, i)'><i class='bi bi-plus-circle'></i></button>${amount}<button id="${i}" class='btnAddDel' onclick='patchAmount(false, i)'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id=${i} class='btn' onclick='delRow(this, "${Itemid}", "${typ}", "${place}", "${amount}", "${i}")'><i class='fa fa-trash'></i></button></td></tr>`;
+        let p = btn.parentNode.parentNode;
+        p.parentNode.removeChild(p)
+        let newRows = rows.replace(delStr, "")
+        
+        rows = newRows
+        delStr = "";
+    }
+
+</script>
+<script>
+    function patchAmount(addOrSub, index) {
+        console.log(addOrSub, index)
+    }
+</script>
+</html>
