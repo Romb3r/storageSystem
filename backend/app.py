@@ -5,10 +5,10 @@ import db, codecs
 app = FastAPI()
 
 def generate_html_res():
-    html_content = codecs.open("../frontend/index.html", "r")
+    html_content = codecs.open("../frontend/index.html", "r", encoding="utf-8")
     return HTMLResponse(content=html_content.read(), status_code=200)
 
-@app.get("/")
+@app.get("/index.html", response_class=HTMLResponse)
 def print_service():
     return generate_html_res()
 
@@ -20,22 +20,22 @@ def get_all_food():
 def get_food(typ: str):
     return db.get_food(typ)
 
-@app.post("/insert/food/{id}/{typ}/{amount}/{place}")
-def insert_food(id: int, typ: str, amount: int, place: str):
-    db.insert_food(id, typ, amount, place)
-    return {"id": id, "Typ": typ, "Menge": amount, "Ort": place}
+@app.post("/insert/food/{typ}/{amount}/{place}")
+def insert_food(typ: str, amount: int, place: str):
+    db.insert_food(typ, amount, place)
+    return {"Typ": typ, "Menge": amount, "Ort": place}
 
-@app.put("/update/food/{id}/{typ}/{operation}")
-def update_food_amount(id: int, typ: str, operation: bool):
-    amount = db.update_food_amount(id, typ, operation)
+@app.put("/update/food/{typ}/{operation}")
+def update_food_amount(typ: str, operation: bool):
+    amount = db.update_food_amount(typ, operation)
     if amount == 0:
-        return {"id": id, "Typ": typ, "Status": "deleted"}
-    return {"id": id, "Typ": typ, "Neue Menge": amount}
+        return {"Typ": typ, "Status": "deleted"}
+    return {"Typ": typ, "Neue Menge": amount}
 
-@app.delete("/delete/food/{id}/{typ}")
-def delete_food(id: int, typ: str):
-    db.delete_food(id, typ)
-    return {"id": id, "Typ": typ, "Status": "deleted"}
+@app.delete("/delete/food/{typ}")
+def delete_food(typ: str):
+    db.delete_food(typ)
+    return {"Typ": typ, "Status": "deleted"}
 
 @app.delete("/delete/all/food")
 def delete_all_food():
