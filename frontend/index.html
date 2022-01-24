@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>Lebensmittel Bestand</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
@@ -18,12 +18,12 @@
     </style>
 </head>
 <body>
-    <div>
-        <h1 style="text-align: center;">Lebensmittel Bestand</h1>
-        <div style="text-align: center;">
+    <div style="text-align: center;">
+        <h1>Lebensmittel Bestand</h1>
+        <div>
             <input style="height:30px;" id="col1" type="text" name="typ" value="" placeholder="Bezeichnung"/>
             <select style="height:30px;" id="col2" name="place[]">
-                <option value="0">Ort</option>
+                <option value="0" disabled selected hidden>Ort</option>
                 <option value="1">Kühlschrank</option>
                 <option value="2">Froster</option>
                 <option value="3">Schrank</option>
@@ -31,7 +31,7 @@
                 <option value="5">Regal</option>
             </select>
             <select style="height:30px;" id="col3" name="amount[]">
-                <option value="0">Menge</option>
+                <option value="0" disabled selected hidden>Menge</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -50,15 +50,18 @@
             </select>
             <button style="height:32px;" id="inBtn" class="btnAdd" onclick=addRow()><i class="bi bi-check-lg"></i></button>
         </div>
+        <div>
+            <input type="text" id="searchInput" onkeyup=searchItem() placeholder="Suche..." style="margin-top: 7px; height: 30px;">
+        </div>
     </div>
     <br>
-    <div>
+    <div style="text-align: left;">
         <table class="table table-striped" id="contentTable">
             <tr id="firstRow">
                 <th>Bezeichnung</th>
                 <th>Ort</th>
                 <th>Menge</th>
-                <th>L&ouml;schen</th>
+                <th>Löschen</th>
             </tr>
             <tbody id="foodTable"></tbody>
         </table>
@@ -73,12 +76,11 @@
         let data = await res.json()
         .then((data) => {
             for (i ; i < data.length ; i++) {
-                rows += `<tr><td>${data[i].Typ}</td><td>${data[i].Ort}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${data[i].Typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${data[i].Menge}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${data[i].Typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${data[i].Typ}", "${data[i].Ort}", "${data[i].Menge}", "${i}")'><i class='bi bi-trash'></i></button></td></tr>`;
+                rows += `<tr><td>${data[i].Typ}</td><td>${data[i].Ort}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${data[i].Typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${data[i].Menge}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${data[i].Typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${data[i].Typ}")'><i class='bi bi-trash'></i></button></td></tr>`;
             }
             document.getElementById('foodTable').innerHTML = rows;
         })
     }
-
 </script>
 <script>
 var rows = "";
@@ -112,7 +114,7 @@ var rows = "";
             if (!response.ok) {
                 throw new Error('Could not insert food')
             } else {
-                rows += `<tr><td>${typ}</td><td>${place}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${amount}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${typ}", "${place}", "${amount}", "${i}")'><i class='bi bi-trash'></i></button></td></tr>`;
+                rows += `<tr><td>${typ}</td><td>${place}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${amount}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${typ}")'><i class='bi bi-trash'></i></button></td></tr>`;
                 i = i + 1;
                 document.getElementById('foodTable').innerHTML = rows;
             }
@@ -123,7 +125,7 @@ var rows = "";
         })   
     }
 
-    async function delRow(btn, typ, place, amount, i) {
+    async function delRow(btn, typ) {
         await fetch("http://localhost:8000/delete/food/" + typ, {
             method: "DELETE"
         })
@@ -131,11 +133,7 @@ var rows = "";
             if (!response.ok) {
                 throw new Error('Could not delete food')
             } else {
-                let delStr = `<tr><td>${typ}</td><td>${place}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${amount}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${typ}", "${place}", "${amount}", "${i}")'><i class='fa fa-trash'></i></button></td></tr>`;
-                let p = btn.parentNode.parentNode;
-                p.parentNode.removeChild(p)
-                let newRows = rows.replace(delStr, "")
-                rows = newRows
+                location.reload();
             }
         })
         .catch(error => {
@@ -143,33 +141,54 @@ var rows = "";
             return
         })
     }
-
 </script>
 <script>
     async function patchAmount(addOrSub, index, typ) {
-        console.log(index)
         let pAmount = document.getElementById(`amount${index}`)
         let amount = pAmount.innerHTML
-        console.log(amount)
-        await fetch("http://localhost:8000/update/food/" + typ + "/" + addOrSub, {
+        if (addOrSub) {
+            amount = parseInt(amount) + 1
+        } else {
+            amount = parseInt(amount) - 1
+        } 
+        if (amount == 0) {
+            location.reload()
+        }  
+        pAmount.innerHTML = amount
+
+        await fetch("http://localhost:8000/update/food/" + typ + "/" + amount, {
             method: "PUT"
         })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Could not update food amount')
-            } else {
-                if (addOrSub) {
-                    amount = parseInt(amount) + 1
-                } else {
-                    amount = parseInt(amount) - 1
-                }   
-                pAmount.innerHTML = amount
             }
         })
         .catch(error => {
             console.log("Error")
             return
         })
+    }
+</script>
+<script>
+    function searchItem() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("foodTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
     }
 </script>
 </html>
