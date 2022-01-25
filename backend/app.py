@@ -27,23 +27,35 @@ def get_food(typ: str):
 
 @app.post("/insert/food/{typ}/{amount}/{place}")
 def insert_food(typ: str, amount: int, place: str):
-    db.insert_food(typ, amount, place)
+    db.insert_food(typ, amount, place, "")
     return {"Typ": typ, "Menge": amount, "Ort": place}
 
 
-@app.put("/update/food/{typ}/{amount}")
-def update_food_amount(typ: str, amount: int):
-    amount = db.update_food_amount(typ, amount)
+@app.put("/update/food/{typ}/{place}/{amount}")
+def update_food_amount(typ: str, place: str, amount: int):
+    amount = db.update_food_amount(typ, amount, place)
     if amount == 0:
-        db.delete_food(typ)
-        return {"Typ": typ, "Status": "deleted"}
-    return {"Typ": typ, "Neue Menge": amount}
+        db.delete_food(typ, place)
+        return {"Typ": typ, "Ort": place, "Status": "deleted"}
+    return {"Typ": typ, "Ort": place, "Neue Menge": amount}
 
 
-@app.delete("/delete/food/{typ}")
-def delete_food(typ: str):
-    db.delete_food(typ)
-    return {"Typ": typ, "Status": "deleted"}
+@app.put("/update/comment/{typ}/{place}/{comment}")
+def update_food_comment(typ: str, place: str, comment: str):
+    db.update_food_comment(typ, place, comment)
+    return {"Typ": typ, "Ort": place, "Neuer Kommentar": comment}
+
+
+@app.delete("/delete/food/{typ}/{place}")
+def delete_food(typ: str, place: str):
+    db.delete_food(typ, place)
+    return {"Typ": typ, "Ort": place, "Status": "deleted"}
+
+
+@app.delete("/delete/comment/{typ}/{place}")
+def delete_comment(typ: str, place: str):
+    db.delete_comment(typ, place)
+    return {"Typ": typ, "Ort": place, "Kommentar": "deleted"}
 
 
 @app.delete("/delete/all/food")

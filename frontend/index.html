@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <div style="text-align: center;">
+    <div class="p-3 mb-2 bg-success text-white" style="text-align: center; display:flex; flex-direction: column; min-height: 100%;">
         <h1>Lebensmittel Bestand</h1>
         <div>
             <input style="height:30px;" id="col1" type="text" name="typ" value="" placeholder="Bezeichnung"/>
@@ -53,37 +53,57 @@
         <div>
             <input type="text" id="searchInput" onkeyup=searchItem() placeholder="Suche..." style="margin-top: 7px; height: 30px;">
         </div>
+        <br>
     </div>
-    <br>
     <div style="text-align: left;">
         <table class="table table-striped" id="contentTable">
-            <tr id="firstRow">
+            <tr id="firstRow" style="position: sticky; top: 0px;">
                 <th>Bezeichnung</th>
                 <th>Ort</th>
                 <th>Menge</th>
                 <th>Löschen</th>
+                <th>Bemerkung</th>
             </tr>
             <tbody id="foodTable"></tbody>
         </table>
     </div>
 </body>
 <script>
+    var url = "http://localhost:8000/"
     var i = 0;
     window.onload = async function() {
-        let res = await fetch("http://localhost:8000/get/all/food", {
+        let res = await fetch(url + "get/all/food", {
             method: "GET"
         })
         let data = await res.json()
         .then((data) => {
             for (i ; i < data.length ; i++) {
-                rows += `<tr><td>${data[i].Typ}</td><td>${data[i].Ort}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${data[i].Typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${data[i].Menge}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${data[i].Typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${data[i].Typ}")'><i class='bi bi-trash'></i></button></td></tr>`;
+                if ( data[i].Kommentar === null ) {
+                    data[i].Kommentar = ""
+                }
+                rows += `<tr><td>${data[i].Typ}</td><td>${data[i].Ort}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${data[i].Typ}", "${data[i].Ort}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${data[i].Menge}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${data[i].Typ}", "${data[i].Ort}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${data[i].Typ}", "${data[i].Ort}")'><i class='bi bi-trash'></i></button></td><td><textarea id="commentField${i}" onchange='insertComment(this, "${data[i].Typ}", "${data[i].Ort}")' rows="2" cols="30">${data[i].Kommentar}</textarea></tr>`;
             }
             document.getElementById('foodTable').innerHTML = rows;
         })
     }
 </script>
 <script>
-var rows = "";
+    async function insertComment(textfield, typ, place) {
+        let comment = textfield.value;
+        if (comment == "") {
+            await fetch(url + "delete/comment/" + typ + "/" + place, {
+                method: "DELETE"
+            })
+        }
+        else {
+            await fetch(url + "update/comment/" + typ + "/" + place + "/" + comment, {
+                method: "PUT"
+            })
+        }
+    }
+</script>
+<script>
+    var rows = "";
     async function addRow() {
         var typ = document.getElementById('col1').value;
         var place = document.getElementById('col2').value;
@@ -107,56 +127,56 @@ var rows = "";
             place = "Regal"
         }
 
-        await fetch("http://localhost:8000/insert/food/" + typ + "/" + amount + "/" + place, {
+        await fetch(url + "insert/food/" + typ + "/" + amount + "/" + place, {
             method: "POST"
         })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Could not insert food')
             } else {
-                rows += `<tr><td>${typ}</td><td>${place}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${typ}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${amount}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${typ}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${typ}")'><i class='bi bi-trash'></i></button></td></tr>`;
+                rows += `<tr><td>${typ}</td><td>${place}</td><td id='colAmount'><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(true, "${i}", "${typ}", "${place}")'><i class='bi bi-plus-circle'></i></button><a id="amount${i}">${amount}</a><button style="margin: 1px 5px" id="${i}" class='btnAddDel' onclick='patchAmount(false, "${i}", "${typ}", "${place}")'><i class='bi bi-dash-circle'></i></button></td><td id='del'><button id="${i}" class='btn' onclick='delRow(this, "${typ}", "${place}")'><i class='bi bi-trash'></i></button></td><td><textarea id="commentField${i}" onchange='insertComment(this, "${typ}", "${place}")' rows="2" cols="30"></textarea></tr>`;
                 i = i + 1;
                 document.getElementById('foodTable').innerHTML = rows;
+                location.reload()
             }
         })
         .catch(error => {
-            console.log(typ + " schon in der Liste")
+            alert(typ + " schon in der Liste")
             return
         })   
     }
 
-    async function delRow(btn, typ) {
-        await fetch("http://localhost:8000/delete/food/" + typ, {
+    async function delRow(btn, typ, place) {
+        await fetch(url + "delete/food/" + typ + "/" + place, {
             method: "DELETE"
         })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Could not delete food')
             } else {
-                location.reload();
+                location.reload()
             }
         })
         .catch(error => {
-            console.log("Error")
+            alert("Das hat nicht geklappt")
             return
         })
     }
 </script>
 <script>
-    async function patchAmount(addOrSub, index, typ) {
+    async function patchAmount(addOrSub, index, typ, place) {
         let pAmount = document.getElementById(`amount${index}`)
         let amount = pAmount.innerHTML
         if (addOrSub) {
             amount = parseInt(amount) + 1
         } else {
             amount = parseInt(amount) - 1
-        } 
-        if (amount == 0) {
-            location.reload()
         }  
         pAmount.innerHTML = amount
-
-        await fetch("http://localhost:8000/update/food/" + typ + "/" + amount, {
+        if (amount == 0) {
+            location.reload()
+        }
+        await fetch(url + "update/food/" + typ + "/" + place + "/" + amount, {
             method: "PUT"
         })
         .then(response => {
@@ -165,7 +185,7 @@ var rows = "";
             }
         })
         .catch(error => {
-            console.log("Error")
+            alert("Das hat nicht geklappt")
             return
         })
     }
